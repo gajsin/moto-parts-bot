@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotoPartsBot — Telegram & Avito бот для мотозапчастей</title>
+    <meta name="description" content="Кейс: Разработка Telegram и Avito бота для автоматизации продаж мотозапчастей с интеграцией МойСклад, Impex Japan, AI-аналитикой.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #161616;
+            --bg-card-hover: #1c1c1c;
+            --accent: #e63946;
+            --accent-dim: #c5303c;
+            --accent-glow: rgba(230, 57, 70, 0.15);
+            --accent-glow-strong: rgba(230, 57, 70, 0.3);
+            --text-primary: #f1f1f1;
+            --text-secondary: #999999;
+            --text-muted: #5a5a5a;
+            --border: #222222;
+            --border-light: #2e2e2e;
+            --gradient-accent: linear-gradient(135deg, #e63946 0%, #d62839 100%);
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(230, 57, 70, 0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ===== TOP BANNER ===== */
+        .top-banner {
+            background: #111111;
+            padding: 14px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .top-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: none;
+        }
+
+        .top-banner h1 {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #999;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero-text h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            color: #ffffff;
+        }
+
+        .hero-text .subtitle {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ccc;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            background: rgba(230, 57, 70, 0.1);
+            border-color: rgba(230, 57, 70, 0.3);
+            color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .hero-screenshot {
+            position: relative;
+        }
+
+        .screenshot-frame {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-card), var(--shadow-glow);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            position: relative;
+        }
+
+        .screenshot-frame:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card), 0 0 60px rgba(230, 57, 70, 0.12);
+        }
+
+        .screenshot-frame .frame-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .frame-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border-light);
+        }
+
+        .frame-dot.red { background: var(--accent); }
+
+        .frame-title {
+            font-size: 11px;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: 8px;
+        }
+
+        .screenshot-placeholder {
+            width: 100%;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+
+        .screenshot-placeholder::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(230, 57, 70, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(255, 107, 107, 0.03) 0%, transparent 50%);
+        }
+
+        .screenshot-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+
+        .screenshot-placeholder.has-image img {
+            display: block;
+        }
+
+        .screenshot-placeholder.has-image .placeholder-content {
+            display: none;
+        }
+
+        .placeholder-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 1;
+        }
+
+        .placeholder-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(230, 57, 70, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .placeholder-text {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* ===== SECTION HEADERS ===== */
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 32px;
+        }
+
+        .section-label::before {
+            content: '◆';
+            font-size: 8px;
+        }
+
+        /* ===== FEATURES SECTION ===== */
+        .features-section {
+            padding: 40px 0 60px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            transition: all 0.35s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* ===== SCREENS SECTION ===== */
+        .screens-section {
+            padding: 40px 0 60px;
+        }
+
+        .screens-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .screen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.35s ease;
+        }
+
+        .screen-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card), var(--shadow-glow);
+        }
+
+        .screen-card .frame-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .screen-card .screenshot-placeholder {
+            height: 480px;
+        }
+
+        .screen-label {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        .screen-label::before {
+            content: '◆';
+            font-size: 7px;
+        }
+
+        /* ===== STATS ROW ===== */
+        .stats-section {
+            padding: 40px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.35s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(230, 57, 70, 0.2);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* ===== ARCHITECTURE SECTION ===== */
+        .architecture-section {
+            padding: 40px 0 60px;
+        }
+
+        .arch-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .arch-card::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(230, 57, 70, 0.06), transparent 70%);
+            pointer-events: none;
+        }
+
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+        }
+
+        .arch-layer {
+            position: relative;
+        }
+
+        .arch-layer-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .arch-layer-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            background: var(--accent);
+        }
+
+        .arch-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .arch-item:last-child {
+            border-bottom: none;
+        }
+
+        .arch-item-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-tech {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-badge {
+            padding: 5px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            opacity: 0;
+            animation: fadeInUp 0.7s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 50px 0 40px;
+            }
+
+            .hero-text h2 {
+                font-size: 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .screens-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .arch-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .footer-tech {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .hero-text h2 {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TOP BANNER ===== -->
+    <div class="top-banner">
+        <h1>MotoPartsBot — AI-бот для продаж мотозапчастей</h1>
+    </div>
+
+    <!-- ===== HERO ===== -->
+    <div class="container">
+        <section class="hero">
+            <div class="hero-text animate delay-1">
+                <h2>Moto<br>Parts<br>Bot</h2>
+                <p class="subtitle">
+                    Telegram и Avito бот для автоматизации продаж мотозапчастей. 
+                    Поиск по артикулу → ценообразование → оформление заказа в МойСклад. 
+                    Полный цикл от запроса клиента до создания заказа без участия менеджера.
+                </p>
+                <div class="tech-badges">
+                    <span class="tech-badge">Python</span>
+                    <span class="tech-badge">FastAPI</span>
+                    <span class="tech-badge">aiogram 3</span>
+                    <span class="tech-badge">Redis</span>
+                    <span class="tech-badge">PostgreSQL</span>
+                    <span class="tech-badge">OpenAI GPT</span>
+                    <span class="tech-badge">МойСклад API</span>
+                    <span class="tech-badge">Japan Import API</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="container">
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card animate delay-1">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Источника цен</div>
+                </div>
+                <div class="stat-card animate delay-2">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Платформы</div>
+                </div>
+                <div class="stat-card animate delay-3">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">API интеграций</div>
+                </div>
+                <div class="stat-card animate delay-4">
+                    <div class="stat-value">24/7</div>
+                    <div class="stat-label">Автономная работа</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== FEATURES ===== -->
+    <div class="container">
+        <section class="features-section">
+            <div class="section-label animate">Ключевые возможности</div>
+            <div class="features-grid">
+                <div class="feature-card animate delay-1">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Мультипоиск по артикулам</h3>
+                    <p>Одновременный поиск по МойСклад (наличие), удалённому складу и японскому поставщику (под заказ). Сравнение цен и наличия в реальном времени.</p>
+                </div>
+                <div class="feature-card animate delay-2">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-обработка запросов</h3>
+                    <p>GPT-модель фильтрует спам, извлекает ФИО/телефон/адрес из свободного текста, переводит японские названия деталей и определяет релевантность сообщений.</p>
+                </div>
+                <div class="feature-card animate delay-3">
+                    <div class="feature-icon">📦</div>
+                    <h3>Автозаказ в МойСклад</h3>
+                    <p>Полный цикл оформления: поиск → корзина → данные клиента → создание заказа и контрагента в МойСклад API. Без участия менеджера.</p>
+                </div>
+                <div class="feature-card animate delay-1">
+                    <div class="feature-icon">🇯🇵</div>
+                    <h3>Импорт из Японии</h3>
+                    <p>Интеграция с японским поставщиком: запрос цен в йенах, автоматический пересчёт в рубли с учётом доставки и наценки. Массовая оценка списка деталей.</p>
+                </div>
+                <div class="feature-card animate delay-2">
+                    <div class="feature-icon">💬</div>
+                    <h3>Telegram + Avito</h3>
+                    <p>Единый бот работает в Telegram (aiogram 3) и Avito (webhook). Общая логика обработки, единый склад и база клиентов для обоих каналов.</p>
+                </div>
+                <div class="feature-card animate delay-3">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>Машина состояний</h3>
+                    <p>Детерминированная FSM для оформления заказа: надёжная без ИИ-галлюцинаций. Автосброс при смене намерения, распознавание телефонов, адресов и ФИО.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== SCREENS — TELEGRAM ===== -->
+    <div class="container">
+        <section class="screens-section">
+            <div class="section-label animate">Основные экраны</div>
+            <div class="screens-grid">
+                <div class="screen-card animate delay-1">
+                    <div class="frame-header">
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot red"></div>
+                        <span class="frame-title">telegram</span>
+                    </div>
+                    <div class="screenshot-placeholder has-image" id="screen-tg-search">
+                        <img src="tg-search.png" alt="Поиск запчастей в Telegram">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🔍</div>
+                            <span class="placeholder-text">Поиск запчастей — Telegram</span>
+                        </div>
+                    </div>
+                    <div class="screen-label">Поиск — мультисклад, цены, наличие</div>
+                </div>
+                <div class="screen-card animate delay-2">
+                    <div class="frame-header">
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot red"></div>
+                        <span class="frame-title">telegram</span>
+                    </div>
+                    <div class="screenshot-placeholder has-image" id="screen-tg-japan">
+                        <img src="tg-order.png" alt="Оформление заказа">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🇯🇵</div>
+                            <span class="placeholder-text">Оценка из Японии — Telegram</span>
+                        </div>
+                    </div>
+                    <div class="screen-label">Заказ — ФИО, телефон, адрес, подтверждение</div>
+                </div>
+                <div class="screen-card animate delay-3">
+                    <div class="frame-header">
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot red"></div>
+                        <span class="frame-title">avito</span>
+                    </div>
+                    <div class="screenshot-placeholder has-image" id="screen-tg-order">
+                        <img src="avito-chat.png" alt="Avito AI-чат">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">📦</div>
+                            <span class="placeholder-text">Оформление заказа — Telegram</span>
+                        </div>
+                    </div>
+                    <div class="screen-label">Avito — AI-подбор запчастей по модели</div>
+                </div>
+                <div class="screen-card animate delay-4">
+                    <div class="frame-header">
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot"></div>
+                        <div class="frame-dot red"></div>
+                        <span class="frame-title">avito</span>
+                    </div>
+                    <div class="screenshot-placeholder has-image" id="screen-avito">
+                        <img src="avito-order.png" alt="Avito оформление заказа">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">💬</div>
+                            <span class="placeholder-text">Чат-бот — Avito</span>
+                        </div>
+                    </div>
+                    <div class="screen-label">Avito — поиск, подбор, оформление</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== ARCHITECTURE ===== -->
+    <div class="container">
+        <section class="architecture-section">
+            <div class="section-label animate">Архитектура и стек</div>
+            <div class="arch-card animate delay-1">
+                <div class="arch-grid">
+                    <div class="arch-layer">
+                        <div class="arch-layer-title">Frontend / Каналы</div>
+                        <div class="arch-item"><span class="arch-item-icon">📱</span> Telegram Bot (aiogram 3)</div>
+                        <div class="arch-item"><span class="arch-item-icon">🏪</span> Avito Webhook API</div>
+                        <div class="arch-item"><span class="arch-item-icon">🌐</span> FastAPI REST сервер</div>
+                    </div>
+                    <div class="arch-layer">
+                        <div class="arch-layer-title">Backend / Логика</div>
+                        <div class="arch-item"><span class="arch-item-icon">🧠</span> AI Service (OpenAI GPT)</div>
+                        <div class="arch-item"><span class="arch-item-icon">🔀</span> Router + FSM Engine</div>
+                        <div class="arch-item"><span class="arch-item-icon">📋</span> SKU Parser (regex)</div>
+                        <div class="arch-item"><span class="arch-item-icon">💾</span> Memory Service (Redis)</div>
+                    </div>
+                    <div class="arch-layer">
+                        <div class="arch-layer-title">Интеграции / Данные</div>
+                        <div class="arch-item"><span class="arch-item-icon">📊</span> МойСклад API</div>
+                        <div class="arch-item"><span class="arch-item-icon">🇯🇵</span> Japan Import API</div>
+                        <div class="arch-item"><span class="arch-item-icon">🚚</span> Remote Warehouse API</div>
+                        <div class="arch-item"><span class="arch-item-icon">🐘</span> PostgreSQL (чаты)</div>
+                        <div class="arch-item"><span class="arch-item-icon">⚡</span> Redis (кэш, стейт)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="container">
+        <footer class="footer">
+            <div class="footer-left">© 2026 MotoPartsBot — Автоматизация продаж мотозапчастей</div>
+            <div class="footer-tech">
+                <span class="footer-badge">Python 3.11</span>
+                <span class="footer-badge">FastAPI</span>
+                <span class="footer-badge">aiogram 3</span>
+                <span class="footer-badge">OpenAI GPT</span>
+                <span class="footer-badge">Redis</span>
+                <span class="footer-badge">PostgreSQL</span>
+                <span class="footer-badge">МойСклад</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===== SCROLL ANIMATIONS ===== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.animate').forEach(el => {
+                el.style.animationPlayState = 'paused';
+                observer.observe(el);
+            });
+        });
+    </script>
+
+</body>
+</html>
