@@ -75,23 +75,9 @@ Originally built for Telegram, the bot's architecture also supports Avito market
 
 ---
 
-## 🚀 Getting Started
+## 🔒 Source Code
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/gajsin/moto-parts-bot.git
-   cd moto-parts-bot
-   ```
-2. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Add Telegram BOT_TOKEN, OpenAI key, MoySklad credentials, DB/Redis URLs
-   ```
-3. Run with Docker:
-   ```bash
-   docker-compose up -d
-   ```
-
+> **Note:** This repository serves as a portfolio showcase. The full source code is closed/commercial, but the architecture and implementation details can be reviewed upon request during technical interviews.
 ---
 
 ## 📄 License
