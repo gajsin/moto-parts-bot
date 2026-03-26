@@ -18,13 +18,6 @@
 
 ![Full Showcase](f_82769ba88f78128b.png)
 
-## 📸 Screenshots
-
-| Telegram Search | Order Flow | Avito Chat | Avito Order |
-|:---:|:---:|:---:|:---:|
-| ![Search](tg-search.png) | ![Order](tg-order.png) | ![Avito Chat](avito-chat.png) | ![Avito Order](avito-order.png) |
-
----
 
 ## ✨ Key Features
 
